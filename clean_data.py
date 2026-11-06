@@ -53,7 +53,7 @@ df = df[df["ap_hi"] > df["ap_lo"]]
 
 print("Outlier rows removed:", rows_before - len(df))
 
-# age is in days for some reason so im changing it to years its more natrual and add a .25 for leap years and i round it
+# age is in days for some reason so im changing it to years its more natural and add a .25 for leap years and i round it
 df["age"] = (df["age"] / 365.25).round(1)
 df = df.rename(columns={"age": "age_years"})
 
