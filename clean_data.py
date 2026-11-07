@@ -40,6 +40,11 @@ print("Duplicates left:", df.duplicated().sum())
 
 # catching outliers
 print("\noutliers")
+
+# check min and max before cleaning so we can see whats unrealistic
+print("Min and max before removing outliers:")
+print(df[["age", "height", "weight", "ap_hi", "ap_lo"]].agg(["min", "max"]))
+
 rows_before = len(df)
 
 # anything outside these is a typo nobody is 55cm tall or has a bp of 160/20
@@ -56,6 +61,10 @@ print("Outlier rows removed:", rows_before - len(df))
 # age is in days for some reason so im changing it to years its more natural and add a .25 for leap years and i round it
 df["age"] = (df["age"] / 365.25).round(1)
 df = df.rename(columns={"age": "age_years"})
+
+# check min and max before cleaning so we can see whats unrealistic
+print("Min and max after removing outliers:")
+print(df[["age_years", "height", "weight", "ap_hi", "ap_lo"]].agg(["min", "max"]))
 
 
 #encode categorical values
