@@ -61,3 +61,47 @@ print(classification_report(y_test, y_pred, target_names=["Healthy", "Sick"]))
 # save the model so we dont have to retrain it every time
 joblib.dump(model, "model2_decision_tree.joblib", compress=3)
 print("Saved model2_decision_tree.joblib")
+
+""" Results
+
+Class balance:
+cardio
+0    0.505
+1    0.495
+
+Good balance in dataset, no need for class weighting for imbalance
+
+Train rows: 54867 | Test rows: 13717
+
+Results
+Accuracy: 0.632
+ROC AUC: 0.6321
+
+
+Accuracy and ROC AUC are poor, tuning may give a small improvement
+
+5 fold CV accuracy mean: 0.6252 +/- st dev:  0.0028
+
+Very similar to test accuracy, model performs consistently on unseen data
+
+Confusion matrix:
+         Pred Healthy  Pred Sick
+Healthy          4364       2566
+Sick             2482       4305
+
+Recall is the main weakness of this model, when looking at a patient there's 37% chance of a wrong result, 
+potentially lower decision threshold, or change weights, false positive much more preferable
+
+Classification report:
+              precision    recall  f1-score   support
+
+     Healthy       0.64      0.63      0.63      6930
+        Sick       0.63      0.63      0.63      6787
+
+    accuracy                           0.63     13717
+   macro avg       0.63      0.63      0.63     13717
+weighted avg       0.63      0.63      0.63     13717
+
+Recall and accuracy need improving, poor overall results
+
+"""
