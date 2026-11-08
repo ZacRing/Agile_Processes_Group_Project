@@ -1,4 +1,5 @@
 import pandas as pd
+import joblib
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
@@ -64,6 +65,9 @@ print(pd.DataFrame(cm, index=["Healthy", "Sick"], columns=["Pred Healthy", "Pred
 # Classification report gives a view of precision, recall. f1 score for both classes and the average
 print("\nClassification report:")
 print(classification_report(y_test, y_pred, target_names=["Healthy", "Sick"]))
+
+joblib.dump(model, "model1_logistic_regression.joblib")
+print("Saved model1_logistic_regression.joblib")
 
 
 """ Results
