@@ -62,3 +62,46 @@ print(classification_report(y_test, y_pred, target_names=["Healthy", "Sick"]))
 # compress makes the file way smaller it would be over 200mb without it
 joblib.dump(model, "model3_random_forest.joblib", compress=3)
 print("Saved model3_random_forest.joblib")
+
+""" Results
+
+Class balance:
+cardio
+0    0.505
+1    0.495
+
+Good balance in dataset, no need for class weighting for imbalance
+
+Train rows: 54867 | Test rows: 13717
+
+Results
+Accuracy: 0.7158
+ROC AUC: 0.7751
+
+Accuracy and ROC AUC are okay, acceptable results, tuning may give a small improvement
+
+5 fold CV accuracy mean: 0.7125 +/- st dev:  0.0052
+
+Very similar to test accuracy, model performs consistently on unseen data
+
+Confusion matrix:
+         Pred Healthy  Pred Sick
+Healthy          5056       1874
+Sick             2024       4763
+
+Sick Recall is the main weakness of this model, when looking at a sick patient there's 30% chance of a false negative, 
+potentially lower decision threshold, or change weights, false positive much more preferable
+
+Classification report:
+                precision    recall  f1-score   support
+
+     Healthy       0.71      0.73      0.72      6930
+        Sick       0.72      0.70      0.71      6787
+
+    accuracy                           0.72     13717
+   macro avg       0.72      0.72      0.72     13717
+weighted avg       0.72      0.72      0.72     13717
+
+As mentioned above sick recall needs improving, other than that decent accuracy
+
+"""
