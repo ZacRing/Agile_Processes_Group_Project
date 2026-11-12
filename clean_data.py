@@ -1,5 +1,7 @@
 import kagglehub as kh
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Download latest version
 path = kh.dataset_download("thedevastator/exploring-risk-factors-for-cardiovascular-diseas")
@@ -45,9 +47,30 @@ print("\noutliers")
 print("Min and max before removing outliers:")
 print(df[["age", "height", "weight", "ap_hi", "ap_lo"]].agg(["min", "max"]))
 
+# boxplots to prove the outliers are there, any dots outside the whiskers are outliers
+# each column gets its own plot cos theyre all on different scales
+outlier_cols = ["height", "weight", "ap_hi", "ap_lo"]
+
+
+def plot_boxplots(data, title, filename):
+    fig, axes = plt.subplots(1, len(outlier_cols), figsize=(16, 5))
+    for ax, col in zip(axes, outlier_cols):
+        sns.boxplot(y=data[col], ax=ax, color="skyblue")
+        ax.set_title(col)
+    fig.suptitle(title)
+    plt.tight_layout()
+    plt.savefig(filename, dpi=120)
+    plt.show()
+
+
+plot_boxplots(df, "Before removing outliers", "boxplots_before_cleaning.png")
+
 rows_before = len(df)
 
 # anything outside these is a typo nobody is 55cm tall or has a bp of 160/20
+# height and weight can each look fine but be impossible together, bmi catches that
+bmi = df["weight"] / (df["height"] / 100) ** 2
+df = df[(bmi >= 13) & (bmi <= 60)]
 df = df[(df["height"] >= 120) & (df["height"] <= 220)]
 df = df[(df["weight"] >= 30) & (df["weight"] <= 200)]
 df = df[(df["ap_hi"] >= 80) & (df["ap_hi"] <= 250)]
@@ -57,6 +80,9 @@ df = df[(df["ap_lo"] >= 40) & (df["ap_lo"] <= 160)]
 df = df[df["ap_hi"] > df["ap_lo"]]
 
 print("Outlier rows removed:", rows_before - len(df))
+
+# same boxplots again after so you can see the crazy values (like bp of 11000 or height of 55cm) are gone
+plot_boxplots(df, "After removing outliers", "boxplots_after_cleaning.png")
 
 # age is in days for some reason so im changing it to years its more natural and add a .25 for leap years and i round it
 df["age"] = (df["age"] / 365.25).round(1)
@@ -82,6 +108,34 @@ df = df.rename(columns={"gender": "is_male"})
 
 #make sure everything is a number now
 print(df.dtypes)
+
+
+# correlation between columns
+print("\ncorrelation")
+
+# correlation goes from -1 to 1, close to 1 means two columns go up together, close to -1 means one goes up the other goes down, 0 means no link
+corr = df.corr()
+
+# how much each feature is linked to cardio (what we are predicting)
+print("Correlation with cardio:")
+print(corr["cardio"].drop("cardio").sort_values(ascending=False).round(3))
+
+# heatmap of every column against every other column
+plt.figure(figsize=(11, 9))
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", vmin=-1, vmax=1, square=True)
+plt.title("Correlation heatmap")
+plt.tight_layout()
+plt.savefig("correlation_heatmap.png", dpi=120)
+plt.show()
+
+# flag any pair of features that are very strongly linked as they basically give the model the same info twice
+strong_pairs = []
+feature_cols = [c for c in corr.columns if c != "cardio"]
+for i, a in enumerate(feature_cols):
+    for b in feature_cols[i + 1:]:
+        if abs(corr.loc[a, b]) > 0.7:
+            strong_pairs.append((a, b, round(corr.loc[a, b], 3)))
+print("Feature pairs with correlation over 0.7:", strong_pairs if strong_pairs else "none")
 
 
 # save
