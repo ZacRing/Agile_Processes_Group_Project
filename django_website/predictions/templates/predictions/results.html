@@ -1,0 +1,130 @@
+<!--Results Page-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Your Results - Heart Disease Risk Prediction</title>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+
+        <!-- Page Header -->
+        <div class="text-center mb-4">
+            <h1 class="fw-bold" style="color: #17365D;">
+                Your Results
+            </h1>
+        </div>
+
+        <section class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+
+                <!-- Prediction Result Card -->
+                <article class="card shadow border-0 rounded-4 mb-4">
+                    <div class="card-body p-4 p-md-5 text-center">
+
+                        <h2 class="fw-bold mb-3" style="color: #17365D;">
+                            Estimated Risk of Heart Disease
+                        </h2>
+
+                        <!-- big percentage -->
+                        <p class="display-3 fw-bold mb-2" style="color: #168C8C;">
+                            {{ result.probability }}%
+                        </p>
+
+                        <!-- low medium or high badge -->
+                        <span class="badge bg-{{ result.risk_colour }} fs-5 px-4 py-2 mb-4">
+                            {{ result.risk_level }} Risk
+                        </span>
+
+                        <!-- plain english explanation -->
+                        <p class="fs-5 mb-0">
+                            {{ result.message }}
+                        </p>
+
+                    </div>
+                </article>
+
+                <!-- AI Explanation Card -->
+                <article class="card shadow border-0 rounded-4 mb-4">
+                    <div class="card-body p-4 p-md-5">
+
+                        <h2 class="fw-bold mb-3" style="color: #17365D;">
+                            AI Explanation
+                        </h2>
+
+                        <!-- spinner that shows while the ai is working -->
+                        <div id="ai-loading" class="d-flex align-items-center gap-3">
+                            <div class="spinner-border" role="status" style="color: #168C8C;"></div>
+                            <span class="text-muted">The AI is reading your results...</span>
+                        </div>
+
+                        <!-- the ai text goes in here once it arrives -->
+                        <div id="ai-text" class="fs-5"></div>
+
+                    </div>
+                </article>
+
+                <!-- Disclaimer -->
+                <div class="alert alert-info" role="alert">
+                    <strong>Disclaimer:</strong> This tool is for educational
+                    purposes only and is not a medical diagnosis. Please consult
+                    a healthcare professional about your cardiovascular health.
+                </div>
+
+                <!-- Back Button -->
+                <div class="d-grid">
+                    <a href="/"
+                       class="btn btn-lg text-white fw-semibold"
+                       style="background-color: #168C8C;">
+                        Try Again
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="text-center text-white py-3 mt-5"
+            style="background-color: #17365D;">
+        <div class="container">
+            <p class="mb-0">
+                &copy; 2026 Agile Processes Group Project.
+                All rights reserved.
+            </p>
+        </div>
+    </footer>
+    <script>
+        // once the page has loaded ask django for the ai explanation
+        fetch("/ai-explanation/")
+            .then(response => response.json())
+            .then(data => {
+                // hide the spinner
+                document.getElementById("ai-loading").remove();
+                const aiText = document.getElementById("ai-text");
+
+                if (data.explanation) {
+                    // put each paragraph from the ai into its own line on the page
+                    const lines = data.explanation.split("\n");
+                    for (const line of lines) {
+                        if (line.trim() !== "") {
+                            const paragraph = document.createElement("p");
+                            paragraph.textContent = line;
+                            aiText.appendChild(paragraph);
+                        }
+                    }
+                } else {
+                    aiText.innerHTML = '<p class="text-muted fst-italic mb-0">Sorry the AI explanation is not available right now.</p>';
+                }
+            })
+            .catch(() => {
+                // if something goes wrong like the server is down
+                document.getElementById("ai-loading").remove();
+                document.getElementById("ai-text").innerHTML =
+                    '<p class="text-muted fst-italic mb-0">Sorry the AI explanation is not available right now.</p>';
+            });
+    </script>
+</body>
+</html>

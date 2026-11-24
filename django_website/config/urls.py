@@ -21,4 +21,5 @@ from predictions import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('ai-explanation/', views.ai_explanation, name='ai_explanation'),
 ]

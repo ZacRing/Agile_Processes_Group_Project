@@ -3,3 +3,6 @@
 .idea/
 *.joblib
 *.png
+.env
+__pycache__/
+!model1_logistic_regression_tuned.joblib
