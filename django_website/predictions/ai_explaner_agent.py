@@ -63,14 +63,15 @@ def explain_result(input_data, result):
                 "A machine learning model estimated this person's risk of heart disease.\n\n"
                 f"Their details:\n{patient}\n\n"
                 f"Estimated risk: {result['probability']}% ({result['risk_level']} risk)\n\n"
-                "Write a short explanation for this person. "
-                "Say which of their details are commonly linked to higher or lower heart disease risk. "
-                "Give two or three general healthy habits that could help. "
-                "Do not diagnose them. Remind them this is not a medical diagnosis "
-                "and they should talk to a doctor. "
-                "Keep it under 150 words. Use plain text only with no bullet points or symbols."
+                "Write 3 to 5 short bullet points for this person. "
+                "Each bullet point must be on its own line and start with '- '. "
+                "Cover which of their details are linked to higher or lower heart disease risk "
+                "and one or two healthy habits that could help. "
+                "Keep each bullet point to one short sentence in plain English. "
+                "Do not diagnose them. "
+                "Do not write anything before or after the bullet points."
             ),
-            expected_output="A short plain English explanation under 150 words",
+            expected_output="3 to 5 short bullet points each starting with '- '",
             agent=explainer,
         )
 
