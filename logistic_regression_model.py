@@ -12,6 +12,7 @@ from sklearn.metrics import (
     roc_auc_score,
     ConfusionMatrixDisplay,
 )
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 df = pd.read_csv("heart_clean.csv")
 print("Number of rows to learn from:", len(df))
@@ -81,6 +82,49 @@ print("ROC AUC:", round(roc_auc_score(y_test, y_prob), 4))
 cv_scores = cross_val_score(model, X_train, y_train, cv=10, scoring="accuracy")
 print("10-fold CV accuracy mean:", round(cv_scores.mean(), 4), "+/- st dev: ", round(cv_scores.std(), 4))
 
+# Define the Logistic Regression pipeline
+grid_model = Pipeline([
+    ("scaler", StandardScaler()),
+    ("logreg", LogisticRegression(max_iter=3000))
+])
+
+# Define the parameters to test
+param_grid = {
+    "logreg__C": [0.01, 0.1, 0.5, 1, 2, 10, 100],
+    "logreg__penalty": ["l1", "l2"],
+    "logreg__solver": ["liblinear"]
+}
+
+# Set up 5-fold cross-validation
+cv = StratifiedKFold(
+    n_splits=5,
+    shuffle=True,
+    random_state=9
+)
+
+# Run Grid Search
+grid_search = GridSearchCV(
+    estimator=grid_model,
+    param_grid=param_grid,
+    scoring="recall",
+    cv=cv,
+    n_jobs=-1
+)
+
+# Fit using training data only
+grid_search.fit(X_train, y_train)
+
+# Display the best settings
+print("Best parameters:", grid_search.best_params_)
+print("Best CV recall:", grid_search.best_score_)
+
+# Train the final model using the best settings
+final_tuned_model = grid_search.best_estimator_
+joblib.dump(final_tuned_model, "model1_logistic_regression_tuned.joblib")
+
+# Evaluate on the held-out test data
+tuned_pred = final_tuned_model.predict(X_test)
+tuned_prob = final_tuned_model.predict_proba(X_test)[:, 1]
 
 # Compare train and test accuracy to check for over / underfitting
 print("\nOver / underfitting check")
@@ -146,6 +190,45 @@ prob_small = model_small.predict_proba(X_test.drop(columns=drop_cols))[:, 1]
 print("\nWith smoke + alco    -> Accuracy:", round(accuracy_score(y_test, y_pred), 4), "AUC:", round(roc_auc_score(y_test, y_prob), 4))
 print("Without smoke + alco -> Accuracy:", round(accuracy_score(y_test, pred_small), 4), "AUC:", round(roc_auc_score(y_test, prob_small), 4))
 
+
+# BASELINE VS GRID SEARCH TUNED MODEL
+
+baseline_report = classification_report(
+    y_test, y_pred, output_dict=True
+)
+
+tuned_report = classification_report(
+    y_test, tuned_pred, output_dict=True
+)
+
+comparison = pd.DataFrame({
+    "Baseline": [
+        accuracy_score(y_test, y_pred),
+        roc_auc_score(y_test, y_prob),
+        baseline_report["1"]["precision"],
+        baseline_report["1"]["recall"],
+        baseline_report["1"]["f1-score"]
+    ],
+    "GridSearchCV Tuned": [
+        accuracy_score(y_test, tuned_pred),
+        roc_auc_score(y_test, tuned_prob),
+        tuned_report["1"]["precision"],
+        tuned_report["1"]["recall"],
+        tuned_report["1"]["f1-score"]
+    ]
+}, index=[
+    "Accuracy",
+    "ROC AUC",
+    "Sick Precision",
+    "Sick Recall",
+    "Sick F1-score"
+])
+
+print("\nBaseline vs GridSearchCV Logistic Regression")
+print(comparison.round(4))
+
+comparison.to_csv("logistic_regression_comparison.csv")
+print("Comparison saved.")
 
 """ Results
 
