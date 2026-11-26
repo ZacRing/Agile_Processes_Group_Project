@@ -62,8 +62,11 @@ def explain_result(input_data, result):
             description=(
                 "A machine learning model estimated this person's risk of heart disease.\n\n"
                 f"Their details:\n{patient}\n\n"
-                f"Estimated risk: {result['probability']}% ({result['risk_level']} risk)\n\n"
+                f"Estimated risk: {result['probability']}% ({result['risk_level']} risk)\n"
+                f"Similar patients: {result.get('similar_patients', 'not available')}\n\n"
                 "Write 3 to 5 short bullet points for this person. "
+                "If similar patients are given, one bullet point should mention how many "
+                "of the most similar patients had heart disease. "
                 "Each bullet point must be on its own line and start with '- '. "
                 "Cover which of their details are linked to higher or lower heart disease risk "
                 "and one or two healthy habits that could help. "
