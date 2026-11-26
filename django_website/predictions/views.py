@@ -5,6 +5,7 @@ import pandas as pd
 from django.shortcuts import render
 from .forms import HeartDiseaseForm
 from .ai_explaner_agent import explain_result
+from .neighbours import find_neighbours
 from django.http import JsonResponse
 
 # Load the saved tuned Logistic Regression model
@@ -80,6 +81,10 @@ def home(request):
                     "We recommend speaking to a doctor for a proper check up."
                 )
 
+            # find the 5 most similar patients in the training data with knn
+            # this backs up the percentage with real people, e.g. 4 out of 5 had heart disease
+            knn = find_neighbours(input_data, k=11)
+
             # ask crewai and gemini to explain the result
             # save the answers and result so the ai can use them after the results page loads
             # float makes sure the number can be saved in the session
@@ -87,13 +92,14 @@ def home(request):
             request.session["result"] = {
                 "probability": float(result["probability"]),
                 "risk_level": result["risk_level"],
+                "similar_patients": knn["summary"],
             }
 
             # show the results page straight away the ai explanation loads in after
             return render(
                 request,
                 "predictions/results.html",
-                {"result": result}
+                {"result": result, "knn": knn}
             )
     else:
         form = HeartDiseaseForm()

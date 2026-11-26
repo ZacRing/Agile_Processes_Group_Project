@@ -46,6 +46,88 @@
                     </div>
                 </article>
 
+                <!-- Similar Patients Card -->
+                <!-- knn finds the patients in the training data whose answers are closest to the user's -->
+                {% if knn %}
+                <article class="card shadow border-0 rounded-4 mb-4">
+                    <div class="card-body p-4 p-md-5">
+
+                        <h2 class="fw-bold mb-3" style="color: #17365D;">
+                            Patients Like You
+                        </h2>
+
+                        <!-- e.g. 7 out of your 10 most similar patients had heart disease -->
+                        <p class="fs-5 mb-3">
+                            <span class="fw-bold" style="color: #168C8C;">{{ knn.n_disease }} out of {{ knn.k }}</span>
+                            of the patients most similar to you had heart disease.
+                        </p>
+
+                        <!-- one dot per patient, red = heart disease, green = no heart disease -->
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            {% for n in knn.neighbours %}
+                                <span class="rounded-circle d-inline-block {% if n.has_disease %}bg-danger{% else %}bg-success{% endif %}"
+                                      style="width: 32px; height: 32px;"
+                                      title="{% if n.has_disease %}Heart disease{% else %}No heart disease{% endif %}"></span>
+                            {% endfor %}
+                        </div>
+                        <p class="small text-muted mb-4">
+                            <span class="badge bg-danger">&nbsp;</span> Heart disease
+                            <span class="badge bg-success ms-3">&nbsp;</span> No heart disease
+                        </p>
+
+                        <!-- details of each similar patient -->
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-3">
+                                <thead>
+                                    <tr style="color: #17365D;">
+                                        <th>#</th>
+                                        <th>Age</th>
+                                        <th>Sex</th>
+                                        <th>Height</th>
+                                        <th>Weight</th>
+                                        <th>Blood Pressure</th>
+                                        <th>Cholesterol</th>
+                                        <th>Smokes</th>
+                                        <th>Active</th>
+                                        <th>Heart Disease</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for n in knn.neighbours %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ n.age }}</td>
+                                        <td>{{ n.sex }}</td>
+                                        <td>{{ n.height }} cm</td>
+                                        <td>{{ n.weight }} kg</td>
+                                        <td>{{ n.blood_pressure }}</td>
+                                        <td>{{ n.cholesterol }}</td>
+                                        <td>{{ n.smoke }}</td>
+                                        <td>{{ n.active }}</td>
+                                        <td>
+                                            {% if n.has_disease %}
+                                                <span class="badge bg-danger">Yes</span>
+                                            {% else %}
+                                                <span class="badge bg-success">No</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- explain where these people come from -->
+                        <p class="small text-muted mb-0">
+                            These are the {{ knn.k }} patients in our training data whose answers are
+                            closest to yours, found using k-nearest neighbours. It is a second check
+                            alongside the model above, not a diagnosis.
+                        </p>
+
+                    </div>
+                </article>
+                {% endif %}
+
                 <!-- AI Explanation Card -->
                 <article class="card shadow border-0 rounded-4 mb-4">
                     <div class="card-body p-4 p-md-5">
